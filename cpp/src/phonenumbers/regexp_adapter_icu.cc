@@ -73,7 +73,9 @@ class IcuRegExpInput : public RegExpInput {
   virtual ~IcuRegExpInput() {}
 
   virtual string ToString() const {
-    return UnicodeStringToUtf8String(utf8_input_.tempSubString(position_));
+    // Older versions of ICU don't have tempSubString.
+//  return UnicodeStringToUtf8String(utf8_input_.tempSubString(position_));
+    return UnicodeStringToUtf8String(UnicodeString(utf8_input_, position_));
   }
 
   UnicodeString* Data() {
