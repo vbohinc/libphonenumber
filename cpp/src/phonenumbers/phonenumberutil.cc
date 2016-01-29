@@ -965,7 +965,14 @@ void PhoneNumberUtil::GetIdPrefixForRegion(const string& region_code,
                  << ") provided.";
     return;
   }
-  international_prefix->assign(metadata->international_prefix());
+  const string& international_prefix_match = metadata->international_prefix();
+  // For regions that have multiple international prefixes, the international
+  // format of the number is returned, unless there is a preferred international
+  // prefix.
+  international_prefix->assign(
+      reg_exps_->unique_international_prefix_->FullMatch(international_prefix_match)
+      ? international_prefix_match
+      : metadata->preferred_international_prefix());
   if (strip_non_digits) {
     // Note: if any other non-numeric symbols are ever used in national
     // prefixes, these would have to be removed here as well.
