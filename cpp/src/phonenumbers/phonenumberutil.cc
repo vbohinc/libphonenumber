@@ -752,6 +752,24 @@ void PhoneNumberUtil::GetNddPrefixForRegion(const string& region_code,
   }
 }
 
+void PhoneNumberUtil::GetIdPrefixForRegion(const string& region_code,
+                                           bool strip_non_digits,
+                                           string* international_prefix) const {
+  DCHECK(international_prefix);
+  const PhoneMetadata* metadata = GetMetadataForRegion(region_code);
+  if (!metadata) {
+    LOG(WARNING) << "Invalid or unknown region code (" << region_code
+                 << ") provided.";
+    return;
+  }
+  international_prefix->assign(metadata->international_prefix());
+  if (strip_non_digits) {
+    // Note: if any other non-numeric symbols are ever used in national
+    // prefixes, these would have to be removed here as well.
+    strrmm(international_prefix, "~");
+  }
+}
+
 bool PhoneNumberUtil::IsValidRegionCode(const string& region_code) const {
   return (region_to_metadata_map_->find(region_code) !=
           region_to_metadata_map_->end());
