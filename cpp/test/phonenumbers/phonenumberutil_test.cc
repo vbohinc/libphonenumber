@@ -149,6 +149,14 @@ class PhoneNumberUtilTest : public testing::Test {
     phone_util_.GetNddPrefixForRegion(region, strip_non_digits, ndd_prefix);
   }
 
+  void GetIdPrefixForRegion(const string& region,
+                            bool strip_non_digits,
+                            string* id_prefix) const {
+    // For testing purposes, we check this is empty first.
+    id_prefix->clear();
+    phone_util_.GetIdPrefixForRegion(region, strip_non_digits, id_prefix);
+  }
+
   const PhoneNumberUtil& phone_util_;
 
  private:
@@ -2349,7 +2357,7 @@ TEST_F(PhoneNumberUtilTest, GetInternationalDiallingPrefixForRegion) {
 
   // Test non-main country to see it gets the international dialling prefix for
   // the main country with that country calling code.
-  GetIdPrefixForRegion(RegionCode::CH(), false, &id_prefix);
+  GetIdPrefixForRegion(RegionCode::FR(), false, &id_prefix);
   EXPECT_EQ("00", id_prefix);
 
   GetIdPrefixForRegion(RegionCode::NZ(), false, &id_prefix);

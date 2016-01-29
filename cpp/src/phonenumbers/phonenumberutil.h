@@ -451,7 +451,7 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
   // is present, we return an empty string.
   void GetIdPrefixForRegion(const string& region_code,
                             bool strip_non_digits,
-                            string* international_dialing_prefix)
+                            string* international_dialing_prefix) const;
 
   // Checks whether a phone number is a possible number. It provides a more
   // lenient check than IsValidNumber() in the following sense:
