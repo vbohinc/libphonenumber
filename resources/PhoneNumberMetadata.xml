@@ -1690,6 +1690,11 @@
           <leadingDigits>13[1-9]</leadingDigits>
           <format>$1 $2 $3</format>
         </numberFormat>
+        <numberFormat nationalPrefixFormattingRule="$NP$FG"
+          pattern="(198)(\d{3})(\d{3})">
+          <leadingDigits>198</leadingDigits>
+          <format>$1 $2 $3</format>
+        </numberFormat>
       </availableFormats>
       <generalDesc>
         <nationalNumberPattern>
