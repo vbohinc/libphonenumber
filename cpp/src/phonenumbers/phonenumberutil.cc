@@ -2275,6 +2275,30 @@ bool PhoneNumberUtil::IsPossibleNumberForType(
   return result == IS_POSSIBLE || result == IS_POSSIBLE_LOCAL_ONLY;
 }
 
+bool PhoneNumberUtil::IsPossibleNationalNumber(
+  const PhoneNumber& number) const {
+  string national_number;
+  GetNationalSignificantNumber(number, &national_number);
+  int country_code = number.country_code();
+  // Note: For Russian Fed and NANPA numbers, we just use the rules from the
+  // default region (US or Russia) since the GetRegionCodeForNumber will not
+  // work if the number is possible but not valid. This would need to be
+  // revisited if the possible number pattern ever differed between various
+  // regions within those plans.
+  if (!HasValidCountryCallingCode(country_code)) {
+    return INVALID_COUNTRY_CODE;
+  }
+  string region_code;
+  GetRegionCodeForCountryCode(country_code, &region_code);
+  // Metadata cannot be NULL because the country calling code is valid.
+  const PhoneMetadata* metadata =
+      GetMetadataForRegionOrCallingCode(country_code, region_code);
+  const RegExp& possible_number_pattern = reg_exps_->regexp_cache_->GetRegExp(
+      StrCat("(", metadata->general_desc().national_number_pattern(), ")"));
+  return TestNumberLengthAgainstPattern(possible_number_pattern,
+                                        national_number) == IS_POSSIBLE;
+}
+
 bool PhoneNumberUtil::IsPossibleNumberForString(
     const string& number,
     const string& region_dialing_from) const {
