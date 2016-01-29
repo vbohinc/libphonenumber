@@ -1949,6 +1949,25 @@ TEST_F(PhoneNumberUtilTest,
       number, PhoneNumberUtil::PREMIUM_RATE));
 }
 
+TEST_F(PhoneNumberUtilTest, IsPossibleNationalNumber) {
+  PhoneNumber number;
+  number.set_country_code(1);
+  number.set_national_number(6502530000ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(1);
+  number.set_national_number(2530000ULL);
+  EXPECT_FALSE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(44);
+  number.set_national_number(2070313000ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(800);
+  number.set_national_number(12345678ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+}
+
 TEST_F(PhoneNumberUtilTest, IsPossibleNumberWithReason) {
   // FYI, national numbers for country code +1 that are within 7 to 10 digits
   // are possible.
@@ -2832,6 +2851,34 @@ TEST_F(PhoneNumberUtilTest, GetNationalDiallingPrefixForRegion) {
   ndd_prefix.clear();
   phone_util_.GetNddPrefixForRegion(RegionCode::CS(), false, &ndd_prefix);
   EXPECT_EQ("", ndd_prefix);
+}
+
+TEST_F(PhoneNumberUtilTest, GetInternationalDiallingPrefixForRegion) {
+  string id_prefix;
+  GetIdPrefixForRegion(RegionCode::US(), false, &id_prefix);
+  EXPECT_EQ("011", id_prefix);
+
+  // Test non-main country to see it gets the international dialling prefix for
+  // the main country with that country calling code.
+  GetIdPrefixForRegion(RegionCode::CH(), false, &id_prefix);
+  EXPECT_EQ("00", id_prefix);
+
+  GetIdPrefixForRegion(RegionCode::NZ(), false, &id_prefix);
+  EXPECT_EQ("00", id_prefix);
+
+  // Test case with non-00 international prefix.
+  GetIdPrefixForRegion(RegionCode::JP(), false, &id_prefix);
+  EXPECT_EQ("010", id_prefix);
+
+  GetIdPrefixForRegion(RegionCode::AU(), true, &id_prefix);
+  EXPECT_EQ("0011", id_prefix);
+
+  // Test cases with invalid regions.
+  GetIdPrefixForRegion(RegionCode::GetUnknown(), false, &id_prefix);
+  EXPECT_EQ("", id_prefix);
+
+  GetIdPrefixForRegion(RegionCode::UN001(), false, &id_prefix);
+  EXPECT_EQ("", id_prefix);
 }
 
 TEST_F(PhoneNumberUtilTest, IsViablePhoneNumber) {
