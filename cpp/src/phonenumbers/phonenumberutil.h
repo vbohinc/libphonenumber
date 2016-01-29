@@ -467,6 +467,11 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
   // the reason for failure, this method returns a boolean value.
   bool IsPossibleNumber(const PhoneNumber& number) const;
 
+  // Convenience wrapper around IsPossibleNumberWithReason. Instead of returning
+  // the reason for failure, this method returns a boolean value. Restricted to
+  // checking against national numbers only.
+  bool IsPossibleNationalNumber(const PhoneNumber& number) const;
+
   // Checks whether a phone number is a possible number given a number in the
   // form of a string, and the country where the number could be dialed from.
   // It provides a more lenient check than IsValidNumber(). See
