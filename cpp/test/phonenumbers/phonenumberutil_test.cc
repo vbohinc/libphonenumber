@@ -1692,6 +1692,25 @@ TEST_F(PhoneNumberUtilTest, IsPossibleNumber) {
                                                     RegionCode::UN001()));
 }
 
+TEST_F(PhoneNumberUtilTest, IsPossibleNationalNumber) {
+  PhoneNumber number;
+  number.set_country_code(1);
+  number.set_national_number(6502530000ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(1);
+  number.set_national_number(2530000ULL);
+  EXPECT_FALSE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(44);
+  number.set_national_number(2070313000ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(800);
+  number.set_national_number(12345678ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+}
+
 TEST_F(PhoneNumberUtilTest, IsPossibleNumberWithReason) {
   // FYI, national numbers for country code +1 that are within 7 to 10 digits
   // are possible.
