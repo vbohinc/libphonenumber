@@ -444,6 +444,15 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
                              bool strip_non_digits,
                              string* national_prefix) const;
 
+  // Returns the international dialing prefix for a specific region. For
+  // example, this would be 011 for the United States, and 0011 for Australia.
+  // Set strip_non_digits to true to strip symbols like "~" (which indicates a
+  // wait for a dialling tone) from the prefix returned. If no national prefix
+  // is present, we return an empty string.
+  void GetIdPrefixForRegion(const string& region_code,
+                            bool strip_non_digits,
+                            string* international_dialing_prefix) const;
+
   // Checks whether a phone number is a possible number. It provides a more
   // lenient check than IsValidNumber() in the following sense:
   //   1. It only checks the length of phone numbers. In particular, it doesn't
@@ -466,6 +475,11 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
   // Convenience wrapper around IsPossibleNumberWithReason. Instead of returning
   // the reason for failure, this method returns a boolean value.
   bool IsPossibleNumber(const PhoneNumber& number) const;
+
+  // Convenience wrapper around IsPossibleNumberWithReason. Instead of returning
+  // the reason for failure, this method returns a boolean value. Restricted to
+  // checking against national numbers only.
+  bool IsPossibleNationalNumber(const PhoneNumber& number) const;
 
   // Checks whether a phone number is a possible number given a number in the
   // form of a string, and the country where the number could be dialed from.

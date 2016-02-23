@@ -149,6 +149,14 @@ class PhoneNumberUtilTest : public testing::Test {
     phone_util_.GetNddPrefixForRegion(region, strip_non_digits, ndd_prefix);
   }
 
+  void GetIdPrefixForRegion(const string& region,
+                            bool strip_non_digits,
+                            string* id_prefix) const {
+    // For testing purposes, we check this is empty first.
+    id_prefix->clear();
+    phone_util_.GetIdPrefixForRegion(region, strip_non_digits, id_prefix);
+  }
+
   const PhoneNumberUtil& phone_util_;
 
  private:
@@ -1692,6 +1700,25 @@ TEST_F(PhoneNumberUtilTest, IsPossibleNumber) {
                                                     RegionCode::UN001()));
 }
 
+TEST_F(PhoneNumberUtilTest, IsPossibleNationalNumber) {
+  PhoneNumber number;
+  number.set_country_code(1);
+  number.set_national_number(6502530000ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(1);
+  number.set_national_number(2530000ULL);
+  EXPECT_FALSE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(44);
+  number.set_national_number(2070313000ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+
+  number.set_country_code(800);
+  number.set_national_number(12345678ULL);
+  EXPECT_TRUE(phone_util_.IsPossibleNationalNumber(number));
+}
+
 TEST_F(PhoneNumberUtilTest, IsPossibleNumberWithReason) {
   // FYI, national numbers for country code +1 that are within 7 to 10 digits
   // are possible.
@@ -2321,6 +2348,34 @@ TEST_F(PhoneNumberUtilTest, GetNationalDiallingPrefixForRegion) {
   // CS is already deprecated so the library doesn't support it.
   GetNddPrefixForRegion(RegionCode::CS(), false, &ndd_prefix);
   EXPECT_EQ("", ndd_prefix);
+}
+
+TEST_F(PhoneNumberUtilTest, GetInternationalDiallingPrefixForRegion) {
+  string id_prefix;
+  GetIdPrefixForRegion(RegionCode::US(), false, &id_prefix);
+  EXPECT_EQ("011", id_prefix);
+
+  // Test non-main country to see it gets the international dialling prefix for
+  // the main country with that country calling code.
+  GetIdPrefixForRegion(RegionCode::FR(), false, &id_prefix);
+  EXPECT_EQ("00", id_prefix);
+
+  GetIdPrefixForRegion(RegionCode::NZ(), false, &id_prefix);
+  EXPECT_EQ("00", id_prefix);
+
+  // Test case with non-00 international prefix.
+  GetIdPrefixForRegion(RegionCode::JP(), false, &id_prefix);
+  EXPECT_EQ("010", id_prefix);
+
+  GetIdPrefixForRegion(RegionCode::AU(), true, &id_prefix);
+  EXPECT_EQ("0011", id_prefix);
+
+  // Test cases with invalid regions.
+  GetIdPrefixForRegion(RegionCode::GetUnknown(), false, &id_prefix);
+  EXPECT_EQ("", id_prefix);
+
+  GetIdPrefixForRegion(RegionCode::UN001(), false, &id_prefix);
+  EXPECT_EQ("", id_prefix);
 }
 
 TEST_F(PhoneNumberUtilTest, IsViablePhoneNumber) {

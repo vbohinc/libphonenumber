@@ -752,6 +752,31 @@ void PhoneNumberUtil::GetNddPrefixForRegion(const string& region_code,
   }
 }
 
+void PhoneNumberUtil::GetIdPrefixForRegion(const string& region_code,
+                                           bool strip_non_digits,
+                                           string* international_prefix) const {
+  DCHECK(international_prefix);
+  const PhoneMetadata* metadata = GetMetadataForRegion(region_code);
+  if (!metadata) {
+    LOG(WARNING) << "Invalid or unknown region code (" << region_code
+                 << ") provided.";
+    return;
+  }
+  const string& international_prefix_match = metadata->international_prefix();
+  // For regions that have multiple international prefixes, the international
+  // format of the number is returned, unless there is a preferred international
+  // prefix.
+  international_prefix->assign(
+      reg_exps_->unique_international_prefix_->FullMatch(international_prefix_match)
+      ? international_prefix_match
+      : metadata->preferred_international_prefix());
+  if (strip_non_digits) {
+    // Note: if any other non-numeric symbols are ever used in national
+    // prefixes, these would have to be removed here as well.
+    strrmm(international_prefix, "~");
+  }
+}
+
 bool PhoneNumberUtil::IsValidRegionCode(const string& region_code) const {
   return (region_to_metadata_map_->find(region_code) !=
           region_to_metadata_map_->end());
@@ -1952,6 +1977,30 @@ void PhoneNumberUtil::ExtractPossibleNumber(const string& number,
 
 bool PhoneNumberUtil::IsPossibleNumber(const PhoneNumber& number) const {
   return IsPossibleNumberWithReason(number) == IS_POSSIBLE;
+}
+
+bool PhoneNumberUtil::IsPossibleNationalNumber(
+  const PhoneNumber& number) const {
+  string national_number;
+  GetNationalSignificantNumber(number, &national_number);
+  int country_code = number.country_code();
+  // Note: For Russian Fed and NANPA numbers, we just use the rules from the
+  // default region (US or Russia) since the GetRegionCodeForNumber will not
+  // work if the number is possible but not valid. This would need to be
+  // revisited if the possible number pattern ever differed between various
+  // regions within those plans.
+  if (!HasValidCountryCallingCode(country_code)) {
+    return INVALID_COUNTRY_CODE;
+  }
+  string region_code;
+  GetRegionCodeForCountryCode(country_code, &region_code);
+  // Metadata cannot be NULL because the country calling code is valid.
+  const PhoneMetadata* metadata =
+      GetMetadataForRegionOrCallingCode(country_code, region_code);
+  const RegExp& possible_number_pattern = reg_exps_->regexp_cache_->GetRegExp(
+      StrCat("(", metadata->general_desc().national_number_pattern(), ")"));
+  return TestNumberLengthAgainstPattern(possible_number_pattern,
+                                        national_number) == IS_POSSIBLE;
 }
 
 bool PhoneNumberUtil::IsPossibleNumberForString(
