@@ -503,7 +503,12 @@
         </numberFormat>
       </availableFormats>
       <generalDesc>
+<<<<<<< HEAD
         <nationalNumberPattern>\d{10}</nationalNumberPattern>
+=======
+        <nationalNumberPattern>\d{7,10}</nationalNumberPattern>
+        <possibleNumberPattern>\d{6,10}</possibleNumberPattern>
+>>>>>>> 695252e... Allows formatting of invalid but possible numbers.
       </generalDesc>
       <fixedLine>
         <nationalNumberPattern>[1-6]\d{9}</nationalNumberPattern>
