@@ -435,7 +435,7 @@
         </numberFormat>
       </availableFormats>
       <generalDesc>
-        <nationalNumberPattern>[0389]\d{5,10}</nationalNumberPattern>
+        <nationalNumberPattern>[03789]\d{5,10}</nationalNumberPattern>
         <possibleNumberPattern>\d{6,11}</possibleNumberPattern>
       </generalDesc>
       <fixedLine>

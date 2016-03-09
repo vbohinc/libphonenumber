@@ -835,7 +835,6 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
   int country_calling_code = number.country_code();
   string national_significant_number;
   GetNationalSignificantNumber(number, &national_significant_number);
-  std::cout << "NSN: " << national_significant_number << "\n";
   if (number_format == E164) {
     // Early exit for E164 case (even if the country calling code is invalid)
     // since no formatting of the national number needs to be applied.
@@ -846,8 +845,8 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
     return;
   }
   if (!HasValidCountryCallingCode(country_calling_code)) {
+    std::cout << "Falls out with invalid country code: " << country_calling_code << "\n";
     formatted_number->assign(national_significant_number);
-    std::cout << "Falls out with invalid country code\n";
     return;
   }
   // Note here that all NANPA formatting rules are contained by US, so we use
@@ -863,7 +862,6 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
       GetMetadataForRegionOrCallingCode(country_calling_code, region_code);
   FormatNsn(national_significant_number, *metadata, number_format,
             formatted_number);
-  std::cout << "Formatted number: " << *formatted_number << "\n";
   MaybeAppendFormattedExtension(number, *metadata, number_format,
                                 formatted_number);
   PrefixNumberWithCountryCallingCode(country_calling_code, number_format,
@@ -895,9 +893,16 @@ void PhoneNumberUtil::FormatByPattern(
   const NumberFormat* formatting_pattern =
       ChooseFormattingPatternForNumber(user_defined_formats,
                                        national_significant_number);
+  NumberFormat default_pattern;
   if (!formatting_pattern) {
-    // If no pattern above is matched, we format the number as a whole.
-    formatted_number->assign(national_significant_number);
+    if(FillInDefaultNumberFormat(national_significant_number, *metadata,
+                                 metadata->number_format(),
+                                 &default_pattern)) {
+        formatting_pattern = &default_pattern;
+    } else {
+      // If no pattern above is matched, we format the original input.
+      formatted_number->assign(national_significant_number);
+    }
   } else {
     NumberFormat num_format_copy;
     // Before we do a replacement of the national prefix pattern $NP with the
@@ -1351,10 +1356,17 @@ void PhoneNumberUtil::FormatOutOfCountryKeepingAlphaChars(
     const NumberFormat* formatting_pattern =
         ChooseFormattingPatternForNumber(metadata->number_format(),
                                          national_number);
+    NumberFormat default_pattern;
     if (!formatting_pattern) {
-      // If no pattern above is matched, we format the original input.
-      formatted_number->assign(raw_input_copy);
-      return;
+      if(FillInDefaultNumberFormat(raw_input_copy, *metadata,
+                                   metadata->number_format(),
+                                   &default_pattern)) {
+        formatting_pattern = &default_pattern;
+      } else {
+        // If no pattern above is matched, we format the original input.
+        formatted_number->assign(raw_input_copy);
+        return;
+      }
     }
     NumberFormat new_format;
     new_format.MergeFrom(*formatting_pattern);
@@ -1425,7 +1437,6 @@ const NumberFormat* PhoneNumberUtil::ChooseFormattingPatternForNumber(
       return &(*it);
     }
   }
-  std::cout << "Hit NULL" << "\n";
   return NULL;
 }
 
@@ -1443,7 +1454,6 @@ void PhoneNumberUtil::FormatNsnUsingPatternWithCarrier(
       carrier_code.length() > 0 &&
       formatting_pattern.domestic_carrier_code_formatting_rule().length() > 0) {
     // Replace the $CC in the formatting rule with the desired carrier code.
-    std::cout << "Start of FormatNsnUsingPatternWithCarrier" << "\n";
     string carrier_code_formatting_rule =
         formatting_pattern.domestic_carrier_code_formatting_rule();
     reg_exps_->carrier_code_pattern_->Replace(&carrier_code_formatting_rule,
@@ -1454,10 +1464,8 @@ void PhoneNumberUtil::FormatNsnUsingPatternWithCarrier(
     // Use the national prefix formatting rule instead.
     string national_prefix_formatting_rule =
         formatting_pattern.national_prefix_formatting_rule();
-    std::cout << "Prefix rule:" << national_prefix_formatting_rule << "\n";
     if (number_format == PhoneNumberUtil::NATIONAL &&
         national_prefix_formatting_rule.length() > 0) {
-      std::cout << "Inside if branch" << "\n";
       // Apply the national_prefix_formatting_rule as the formatting_pattern
       // contains only information on how the national significant number
       // should be formatted at this point.
@@ -1471,9 +1479,6 @@ void PhoneNumberUtil::FormatNsnUsingPatternWithCarrier(
       reg_exps_->regexp_cache_->GetRegExp(formatting_pattern.pattern()));
   pattern_to_match.GlobalReplace(formatted_number, number_format_rule);
 
-  std::cout << "Pattern to match: " << formatting_pattern.pattern() << "\n";
-  std::cout << "Formatted: " << *formatted_number << "\n";
-  std::cout << "Number format rule: " << number_format_rule << "\n";
   if (number_format == RFC3966) {
     // First consume any leading punctuation, if any was present.
     const scoped_ptr<RegExpInput> number(
@@ -1525,76 +1530,24 @@ void PhoneNumberUtil::FormatNsnWithCarrier(const string& number,
       : metadata.intl_number_format();
   const NumberFormat* formatting_pattern =
       ChooseFormattingPatternForNumber(available_formats, number);
-  NumberFormat new_format;
-  bool consistent_optional_rule = TRUE;
-  bool consistent_fg_rule = TRUE;
+  NumberFormat default_pattern;
+
+  // Attempt to build a new format with sensible defaults, rather than just
+  // doing no formatting on the number.
   if (!formatting_pattern) {
-      // Set the pattern to the possible national patterns, check the number
-      // matches this or really we shouldn't be doing this.
-      const RegExp& national_number_pattern =
-          reg_exps_->regexp_cache_->GetRegExp(
-              StrCat("(",
-                     metadata.general_desc().national_number_pattern(),
-                     ")"));
-      std::cout << "Matching pattern: " << StrCat("(",
-                     metadata.general_desc().national_number_pattern(),
-                     ")") << "\n";
-      if (TestNumberLengthAgainstPattern(national_number_pattern,
-                                         number) != IS_POSSIBLE)
-      {
-        formatted_number->assign(number);
-        std::cout << "Fail out." << "\n";
+      if(FillInDefaultNumberFormat(number, metadata, available_formats,
+                                   &default_pattern)) {
+        FormatNsnUsingPatternWithCarrier(number, default_pattern,
+                                         number_format, carrier_code,
+                                         formatted_number);
         return;
       }
-      new_format.set_pattern(
-          StrCat("(",
-                 metadata.general_desc().national_number_pattern(),
-                 ")"));
-      new_format.set_format("$1");
-      new_format.add_leading_digits_pattern("[0-9]");
-
-      // Determine national prefix formatting rule. Check that all number
-      // formats agree what the rule should be, if they agree, use what they
-      // agree on. Otherwise assume apply national prefix.
-      if (available_formats.size() != 0) {
-        const NumberFormat first_format = available_formats.Get(0);
-        for (RepeatedPtrField<NumberFormat>::const_iterator
-          it = available_formats.begin(); it != available_formats.end(); ++it) {
-          if (first_format.national_prefix_optional_when_formatting() !=
-              it->national_prefix_optional_when_formatting()) {
-            consistent_optional_rule = FALSE;
-          }
-          if (FormattingRuleHasFirstGroupOnly(
-                first_format.national_prefix_formatting_rule()) !=
-              FormattingRuleHasFirstGroupOnly(
-                it->national_prefix_formatting_rule())) {
-            consistent_fg_rule = FALSE;
-          }
-        }
-
-        if ((consistent_optional_rule) &&
-            (first_format.national_prefix_optional_when_formatting())) {
-          new_format.set_national_prefix_formatting_rule("$1");
-        }
-        else if ((consistent_fg_rule) &&
-                 (FormattingRuleHasFirstGroupOnly(
-                     first_format.national_prefix_formatting_rule()))) {
-          new_format.set_national_prefix_formatting_rule("$1");
-        }
-        else {
-          new_format.set_national_prefix_formatting_rule(
-                                               metadata.national_prefix()+"$1");
-        }
-      }
-      else {
-        // No available formats to pick from. Therefore assume add NDP.
-        new_format.set_national_prefix_formatting_rule(
-                                               metadata.national_prefix()+"$1");
-      }
-      formatting_pattern = &new_format;
+      formatted_number->assign(number);
+      return;
   }
-  FormatNsnUsingPatternWithCarrier(number, *formatting_pattern, number_format,
-                                   carrier_code, formatted_number);
+  FormatNsnUsingPatternWithCarrier(number, *formatting_pattern,
+                                   number_format, carrier_code,
+                                   formatted_number);
 }
 
 // Appends the formatted extension of a phone number, if the phone number had an
@@ -2901,6 +2854,64 @@ bool PhoneNumberUtil::CanBeInternationallyDialled(
   GetNationalSignificantNumber(number, &national_significant_number);
   return !IsNumberMatchingDesc(
       national_significant_number, metadata->no_international_dialling());
+}
+
+bool PhoneNumberUtil::FillInDefaultNumberFormat(
+    const string& number,
+    const PhoneMetadata& metadata,
+    const RepeatedPtrField<NumberFormat> available_formats,
+    NumberFormat* formatting_pattern) const {
+  DCHECK(formatting_pattern);
+  bool national_prefix_optional = true;
+  bool formatting_rule_has_first_group_only = true;
+  // Check the number is possible, otherwise don't try any formatting.
+  const RegExp& national_number_pattern =
+      reg_exps_->regexp_cache_->GetRegExp(
+          StrCat("(",
+                 metadata.general_desc().national_number_pattern(),
+                 ")"));
+  if (TestNumberLengthAgainstPattern(national_number_pattern,
+                                     number) != IS_POSSIBLE)
+  {
+    return false;
+  }
+  formatting_pattern->set_pattern(
+      StrCat("(",
+             metadata.general_desc().national_number_pattern(),
+             ")"));
+  formatting_pattern->set_format("$1");
+  formatting_pattern->add_leading_digits_pattern("[0-9]");
+
+  // Determine national prefix formatting rule. Check that all number
+  // formats agree what the rule should be, if they agree, use what they
+  // agree on. Otherwise assume apply national prefix.
+  if (available_formats.size() != 0) {
+    for (RepeatedPtrField<NumberFormat>::const_iterator
+      it = available_formats.begin(); it != available_formats.end(); ++it) {
+      if (!it->national_prefix_optional_when_formatting()) {
+        national_prefix_optional = false;
+      }
+      if (!FormattingRuleHasFirstGroupOnly(
+            it->national_prefix_formatting_rule())) {
+        formatting_rule_has_first_group_only = false;
+      }
+    }
+
+    if ((national_prefix_optional) ||
+        (formatting_rule_has_first_group_only)) {
+      formatting_pattern->set_national_prefix_formatting_rule("$1");
+    }
+    else {
+      formatting_pattern->set_national_prefix_formatting_rule(
+                                           metadata.national_prefix()+"$1");
+    }
+  }
+  else {
+    // No available formats to pick from. Therefore assume add NDP.
+    formatting_pattern->set_national_prefix_formatting_rule(
+                                           metadata.national_prefix()+"$1");
+  }
+  return true;
 }
 
 }  // namespace phonenumbers
