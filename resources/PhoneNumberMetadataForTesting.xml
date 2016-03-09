@@ -358,7 +358,7 @@
         </numberFormat>
       </availableFormats>
       <generalDesc>
-        <nationalNumberPattern>\d{10}</nationalNumberPattern>
+        <nationalNumberPattern>\d{7,10}</nationalNumberPattern>
         <possibleNumberPattern>\d{6,10}</possibleNumberPattern>
       </generalDesc>
       <fixedLine>
