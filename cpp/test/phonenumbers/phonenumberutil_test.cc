@@ -656,6 +656,18 @@ TEST_F(PhoneNumberUtilTest, FormatITNumber) {
   phone_util_.Format(test_number, PhoneNumberUtil::E164,
                      &formatted_number);
   EXPECT_EQ("+39345678901", formatted_number);
+
+  // Test data numbers
+  test_number.set_national_number(745678901ULL);
+  test_number.set_italian_leading_zero(false);
+  phone_util_.Format(test_number, PhoneNumberUtil::NATIONAL, &formatted_number);
+  EXPECT_EQ("745678901", formatted_number);
+  phone_util_.Format(test_number, PhoneNumberUtil::INTERNATIONAL,
+                     &formatted_number);
+  EXPECT_EQ("+39 745678901", formatted_number);
+  phone_util_.Format(test_number, PhoneNumberUtil::E164,
+                     &formatted_number);
+  EXPECT_EQ("+39745678901", formatted_number);
 }
 
 TEST_F(PhoneNumberUtilTest, FormatAUNumber) {

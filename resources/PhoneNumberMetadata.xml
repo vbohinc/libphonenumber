@@ -12761,7 +12761,8 @@
           )\d{8}|
           [08]\d{5}(?:
             \d{2}
-          )?
+          )?|
+          7\d{5,10}
         </nationalNumberPattern>
       </generalDesc>
       <noInternationalDialling>
