@@ -845,6 +845,7 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
     return;
   }
   if (!HasValidCountryCallingCode(country_calling_code)) {
+    std::cout << "Falls out with invalid country code: " << country_calling_code << "\n";
     formatted_number->assign(national_significant_number);
     return;
   }
@@ -892,9 +893,16 @@ void PhoneNumberUtil::FormatByPattern(
   const NumberFormat* formatting_pattern =
       ChooseFormattingPatternForNumber(user_defined_formats,
                                        national_significant_number);
+  NumberFormat default_pattern;
   if (!formatting_pattern) {
-    // If no pattern above is matched, we format the number as a whole.
-    formatted_number->assign(national_significant_number);
+    if(FillInDefaultNumberFormat(national_significant_number, *metadata,
+                                 metadata->number_format(),
+                                 &default_pattern)) {
+        formatting_pattern = &default_pattern;
+    } else {
+      // If no pattern above is matched, we format the original input.
+      formatted_number->assign(national_significant_number);
+    }
   } else {
     NumberFormat num_format_copy;
     // Before we do a replacement of the national prefix pattern $NP with the
@@ -1014,18 +1022,6 @@ void PhoneNumberUtil::FormatNumberForMobileDialing(
         // string here.
         formatted_number->assign("");
       }
-    } else if (is_valid_number && region_code == "HU") {
-      // The national format for HU numbers doesn't contain the national prefix,
-      // because that is how numbers are normally written down. However, the
-      // national prefix is obligatory when dialing from a mobile phone, except
-      // for short numbers. As a result, we add it back here if it is a valid
-      // regular length phone number.
-      Format(number_no_extension, NATIONAL, formatted_number);
-      string hu_national_prefix;
-      GetNddPrefixForRegion(region_code, true /* strip non-digits */,
-                            &hu_national_prefix);
-      formatted_number->assign(
-          StrCat(hu_national_prefix, " ", *formatted_number));
     } else if (country_calling_code == kNanpaCountryCode) {
       // For NANPA countries, we output international format for numbers that
       // can be dialed internationally, since that always works, except for
@@ -1360,10 +1356,17 @@ void PhoneNumberUtil::FormatOutOfCountryKeepingAlphaChars(
     const NumberFormat* formatting_pattern =
         ChooseFormattingPatternForNumber(metadata->number_format(),
                                          national_number);
+    NumberFormat default_pattern;
     if (!formatting_pattern) {
-      // If no pattern above is matched, we format the original input.
-      formatted_number->assign(raw_input_copy);
-      return;
+      if(FillInDefaultNumberFormat(raw_input_copy, *metadata,
+                                   metadata->number_format(),
+                                   &default_pattern)) {
+        formatting_pattern = &default_pattern;
+      } else {
+        // If no pattern above is matched, we format the original input.
+        formatted_number->assign(raw_input_copy);
+        return;
+      }
     }
     NumberFormat new_format;
     new_format.MergeFrom(*formatting_pattern);
@@ -1527,12 +1530,24 @@ void PhoneNumberUtil::FormatNsnWithCarrier(const string& number,
       : metadata.intl_number_format();
   const NumberFormat* formatting_pattern =
       ChooseFormattingPatternForNumber(available_formats, number);
+  NumberFormat default_pattern;
+
+  // Attempt to build a new format with sensible defaults, rather than just
+  // doing no formatting on the number.
   if (!formatting_pattern) {
-    formatted_number->assign(number);
-  } else {
-    FormatNsnUsingPatternWithCarrier(number, *formatting_pattern, number_format,
-                                     carrier_code, formatted_number);
+      if(FillInDefaultNumberFormat(number, metadata, available_formats,
+                                   &default_pattern)) {
+        FormatNsnUsingPatternWithCarrier(number, default_pattern,
+                                         number_format, carrier_code,
+                                         formatted_number);
+        return;
+      }
+      formatted_number->assign(number);
+      return;
   }
+  FormatNsnUsingPatternWithCarrier(number, *formatting_pattern,
+                                   number_format, carrier_code,
+                                   formatted_number);
 }
 
 // Appends the formatted extension of a phone number, if the phone number had an
@@ -2839,6 +2854,64 @@ bool PhoneNumberUtil::CanBeInternationallyDialled(
   GetNationalSignificantNumber(number, &national_significant_number);
   return !IsNumberMatchingDesc(
       national_significant_number, metadata->no_international_dialling());
+}
+
+bool PhoneNumberUtil::FillInDefaultNumberFormat(
+    const string& number,
+    const PhoneMetadata& metadata,
+    const RepeatedPtrField<NumberFormat> available_formats,
+    NumberFormat* formatting_pattern) const {
+  DCHECK(formatting_pattern);
+  bool national_prefix_optional = true;
+  bool formatting_rule_has_first_group_only = true;
+  // Check the number is possible, otherwise don't try any formatting.
+  const RegExp& national_number_pattern =
+      reg_exps_->regexp_cache_->GetRegExp(
+          StrCat("(",
+                 metadata.general_desc().national_number_pattern(),
+                 ")"));
+  if (TestNumberLengthAgainstPattern(national_number_pattern,
+                                     number) != IS_POSSIBLE)
+  {
+    return false;
+  }
+  formatting_pattern->set_pattern(
+      StrCat("(",
+             metadata.general_desc().national_number_pattern(),
+             ")"));
+  formatting_pattern->set_format("$1");
+  formatting_pattern->add_leading_digits_pattern("[0-9]");
+
+  // Determine national prefix formatting rule. Check that all number
+  // formats agree what the rule should be, if they agree, use what they
+  // agree on. Otherwise assume apply national prefix.
+  if (available_formats.size() != 0) {
+    for (RepeatedPtrField<NumberFormat>::const_iterator
+      it = available_formats.begin(); it != available_formats.end(); ++it) {
+      if (!it->national_prefix_optional_when_formatting()) {
+        national_prefix_optional = false;
+      }
+      if (!FormattingRuleHasFirstGroupOnly(
+            it->national_prefix_formatting_rule())) {
+        formatting_rule_has_first_group_only = false;
+      }
+    }
+
+    if ((national_prefix_optional) ||
+        (formatting_rule_has_first_group_only)) {
+      formatting_pattern->set_national_prefix_formatting_rule("$1");
+    }
+    else {
+      formatting_pattern->set_national_prefix_formatting_rule(
+                                           metadata.national_prefix()+"$1");
+    }
+  }
+  else {
+    // No available formats to pick from. Therefore assume add NDP.
+    formatting_pattern->set_national_prefix_formatting_rule(
+                                           metadata.national_prefix()+"$1");
+  }
+  return true;
 }
 
 }  // namespace phonenumbers

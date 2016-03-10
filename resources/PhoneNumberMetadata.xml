@@ -11238,7 +11238,7 @@
       </availableFormats>
       <generalDesc>
         <nationalNumberPattern>
-          [01589]\d{5,10}|
+          [015789]\d{5,10}|
           3(?:
             [12457-9]\d{8}|
             [36]\d{7,9}

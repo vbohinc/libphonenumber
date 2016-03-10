@@ -831,6 +831,12 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
   // moment, this method does not handle short numbers.
   bool CanBeInternationallyDialled(const PhoneNumber& number) const;
 
+  bool FillInDefaultNumberFormat(
+      const string& number,
+      const PhoneMetadata& metadata,
+      const RepeatedPtrField<NumberFormat> available_formats,
+      NumberFormat* formatting_pattern) const ;
+
   DISALLOW_COPY_AND_ASSIGN(PhoneNumberUtil);
 };
 
