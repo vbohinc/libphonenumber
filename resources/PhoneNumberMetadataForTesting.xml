@@ -825,6 +825,115 @@
       </premiumRate>
     </territory>
 
+    <!-- Turkey -->
+    <territory id="TR" countryCode="90" internationalPrefix="00" nationalPrefix="0"
+               mobileNumberPortableRegion="true">
+      <references>
+        <sourceUrl>http://en.wikipedia.org/wiki/%2B90</sourceUrl>
+        <sourceUrl>http://www.itu.int/oth/T02020000D6/en</sourceUrl>
+      </references>
+      <availableFormats>
+        <numberFormat nationalPrefixFormattingRule="($NP$FG)" pattern="(\d{3})(\d{3})(\d{4})"
+          nationalPrefixOptionalWhenFormatting="true">
+          <leadingDigits>
+            [23]|
+            4(?:
+              [0-35-9]|
+              4[0-35-9]
+            )
+          </leadingDigits>
+          <format>$1 $2 $3</format>
+        </numberFormat>
+        <numberFormat nationalPrefixFormattingRule="$NP$FG" pattern="(\d{3})(\d{3})(\d{4})"
+          nationalPrefixOptionalWhenFormatting="true">
+          <leadingDigits>[589]</leadingDigits>
+          <format>$1 $2 $3</format>
+        </numberFormat>
+        <numberFormat pattern="(444)(\d{1})(\d{3})">
+          <leadingDigits>444</leadingDigits>
+          <format>$1 $2 $3</format>
+        </numberFormat>
+      </availableFormats>
+      <generalDesc>
+        <nationalNumberPattern>
+          [2-589]\d{9}|
+          444\d{4}
+        </nationalNumberPattern>
+        <possibleNumberPattern>\d{7,10}</possibleNumberPattern>
+      </generalDesc>
+      <noInternationalDialling>
+        <nationalNumberPattern>444\d{4}</nationalNumberPattern>
+        <possibleNumberPattern>\d{7}</possibleNumberPattern>
+        <exampleNumber>4441444</exampleNumber>
+      </noInternationalDialling>
+      <fixedLine>
+        <!-- Includes numbers starting with 392 for Northern Cyprus. -->
+        <nationalNumberPattern>
+          (?:
+            2(?:
+              [13][26]|
+              [28][2468]|
+              [45][268]|
+              [67][246]
+            )|
+            3(?:
+              [13][28]|
+              [24-6][2468]|
+              [78][02468]|
+              92
+            )|
+            4(?:
+              [16][246]|
+              [23578][2468]|
+              4[26]
+            )
+          )\d{7}
+        </nationalNumberPattern>
+        <possibleNumberPattern>\d{10}</possibleNumberPattern>
+        <exampleNumber>2123456789</exampleNumber>
+      </fixedLine>
+      <mobile>
+        <!-- There are some differences between the Turkish and English wikipedia pages here, and
+             some number prefixes do not seem to be able to be found online. Omitting 500, 508 and
+             509 from the English page because of this. -->
+        <nationalNumberPattern>
+          5(?:
+            0[1-7]|
+            22|
+            [34]\d|
+            5[1-59]|
+            9[246]
+          )\d{7}
+        </nationalNumberPattern>
+        <possibleNumberPattern>\d{10}</possibleNumberPattern>
+        <exampleNumber>5012345678</exampleNumber>
+      </mobile>
+      <pager>
+        <nationalNumberPattern>512\d{7}</nationalNumberPattern>
+        <possibleNumberPattern>\d{10}</possibleNumberPattern>
+        <exampleNumber>5123456789</exampleNumber>
+      </pager>
+      <tollFree>
+        <nationalNumberPattern>800\d{7}</nationalNumberPattern>
+        <possibleNumberPattern>\d{10}</possibleNumberPattern>
+        <exampleNumber>8001234567</exampleNumber>
+      </tollFree>
+      <premiumRate>
+        <nationalNumberPattern>900\d{7}</nationalNumberPattern>
+        <possibleNumberPattern>\d{10}</possibleNumberPattern>
+        <exampleNumber>9001234567</exampleNumber>
+      </premiumRate>
+      <uan>
+        <!-- http://www.turktelekom.com.tr/tt/portal/News/Archive/7-digit-special-service-number-starting-with-444 -->
+        <nationalNumberPattern>
+          444\d{4}|
+          850\d{7}
+        </nationalNumberPattern>
+        <possibleNumberPattern>\d{7,10}</possibleNumberPattern>
+        <exampleNumber>4441444</exampleNumber>
+      </uan>
+    </territory>
+
     <!-- United States -->
     <!-- http://www.nanpa.com/reports/reports_npa.html -->
     <!-- For testing purposes, numbers starting with 24 are not considered US numbers.-->

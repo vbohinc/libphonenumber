@@ -698,10 +698,10 @@ TEST_F(PhoneNumberUtilTest, FormatTRNumber) {
   test_number.set_country_code(90);
   test_number.set_national_number(8221234567ULL);
   phone_util_.Format(test_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("08221234567", formatted_number);
+  EXPECT_EQ("0822 123 4567", formatted_number);
   phone_util_.Format(test_number, PhoneNumberUtil::INTERNATIONAL,
                      &formatted_number);
-  EXPECT_EQ("+90 8221234567", formatted_number);
+  EXPECT_EQ("+90 822 123 4567", formatted_number);
   phone_util_.Format(test_number, PhoneNumberUtil::E164,
                      &formatted_number);
   EXPECT_EQ("+908221234567", formatted_number);
