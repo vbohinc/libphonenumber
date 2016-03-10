@@ -1048,7 +1048,6 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
     return;
   }
   if (!HasValidCountryCallingCode(country_calling_code)) {
-    std::cout << "Falls out with invalid country code: " << country_calling_code << "\n";
     formatted_number->assign(national_significant_number);
     return;
   }
