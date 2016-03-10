@@ -1060,6 +1060,156 @@
       </tollFree>
     </territory>
 
+    <!-- Turkey -->
+    <!-- http://en.wikipedia.org/wiki/%2B90 -->
+    <!-- http://www.itu.int/oth/T02020000D6/en -->
+    <!-- https://eng.btk.gov.tr/en-US/Pages/National-Numbering-Plan -->
+    <!-- https://www.btk.gov.tr/tr-TR/Sayfalar/Isletmecilere-Tahsisli-Numaralar -->
+    <territory id="TR" countryCode="90" internationalPrefix="00" nationalPrefix="0"
+               nationalPrefixOptionalWhenFormatting="true" mobileNumberPortableRegion="true">
+      <availableFormats>
+        <!-- In online references we see both these formats for mobile and fixed-line numbers:
+             (\d{3})(\d{3})(\d{2})(\d{2}) and (\d{3})(\d{3})(\d{4}). However the former seems to be
+             more common. -->
+        <numberFormat pattern="(\d{3})(\d{3})(\d{2})(\d{2})" nationalPrefixFormattingRule="($NP$FG)">
+          <leadingDigits>
+            [23]|
+            4(?:
+              [0-35-9]|
+              4[0-35-9]
+            )
+          </leadingDigits>
+          <format>$1 $2 $3 $4</format>
+        </numberFormat>
+        <numberFormat pattern="(\d{3})(\d{3})(\d{2})(\d{2})" nationalPrefixFormattingRule="$NP$FG">
+          <leadingDigits>
+            5(?:
+              [02-69]|
+              1[06]
+            )
+          </leadingDigits>
+          <format>$1 $2 $3 $4</format>
+        </numberFormat>
+        <numberFormat pattern="(\d{3})(\d{3})(\d{4})" nationalPrefixFormattingRule="$NP$FG">
+          <leadingDigits>
+            51|
+            [89]
+          </leadingDigits>
+          <format>$1 $2 $3</format>
+        </numberFormat>
+        <numberFormat pattern="(444)(\d{1})(\d{3})">
+          <leadingDigits>444</leadingDigits>
+          <format>$1 $2 $3</format>
+        </numberFormat>
+      </availableFormats>
+      <generalDesc>
+        <nationalNumberPattern>
+          (?:
+            [2-58]\d\d|
+            900
+          )\d{7}|
+          4\d{6}
+        </nationalNumberPattern>
+      </generalDesc>
+      <noInternationalDialling>
+        <possibleLengths national="7"/>
+        <nationalNumberPattern>444\d{4}</nationalNumberPattern>
+      </noInternationalDialling>
+      <!-- Includes numbers starting with 392 for Northern Cyprus. Not supporting additionally
+           allocated area codes that are mentioned in ITU doc dated 7.VII.2009 as these are not
+           mentioned in new ITU doc dated 2.III.2018. -->
+      <fixedLine>
+        <possibleLengths national="10"/>
+        <exampleNumber>2123456789</exampleNumber>
+        <nationalNumberPattern>
+          (?:
+            2(?:
+              [13][26]|
+              [28][2468]|
+              [45][268]|
+              [67][246]
+            )|
+            3(?:
+              [13][28]|
+              [24-6][2468]|
+              [78][02468]|
+              92
+            )|
+            4(?:
+              [16][246]|
+              [23578][2468]|
+              4[26]
+            )
+          )\d{7}
+        </nationalNumberPattern>
+      </fixedLine>
+      <!-- There are some differences between the Turkish and English wikipedia pages here, and
+           some number prefixes do not seem to be able to be found online. Omitting 500, 508 and
+           509 from the English page because of this. -->
+      <mobile>
+        <possibleLengths national="10"/>
+        <exampleNumber>5012345678</exampleNumber>
+        <nationalNumberPattern>
+          5(?:
+            (?:
+              0[15-7]|
+              1[06]|
+              24|
+              [34]\d|
+              5[1-59]|
+              9[46]
+            )\d{2}|
+            6161
+          )\d{5}
+        </nationalNumberPattern>
+      </mobile>
+      <!-- 512 range is mentioned as call services number in eng.btk.gov.tr's doc. As we not sure
+           of the category, supporting them as pager based on Wikipedia. -->
+      <pager>
+        <possibleLengths national="10"/>
+        <exampleNumber>5123456789</exampleNumber>
+        <nationalNumberPattern>512\d{7}</nationalNumberPattern>
+      </pager>
+      <tollFree>
+        <possibleLengths national="10"/>
+        <exampleNumber>8001234567</exampleNumber>
+        <nationalNumberPattern>800\d{7}</nationalNumberPattern>
+      </tollFree>
+      <premiumRate>
+        <possibleLengths national="10"/>
+        <exampleNumber>9001234567</exampleNumber>
+        <nationalNumberPattern>
+          (?:
+            8[89]8|
+            900
+          )\d{7}
+        </nationalNumberPattern>
+      </premiumRate>
+      <!-- All 592 numbers are GMPCS numbers (personal satellite numbers) as per ITU doc. We do
+           support only the ranges that are assigned (max 6 digit granularity) based on
+           eng.btk.gov.tr's doc. -->
+      <personalNumber>
+        <possibleLengths national="10"/>
+        <exampleNumber>5922121234</exampleNumber>
+        <nationalNumberPattern>
+          592(?:
+            21[12]|
+            461
+          )\d{4}
+        </nationalNumberPattern>
+      </personalNumber>
+      <!-- 850 is mentioned as nomadic numbers in ITU and location independent numbers in
+           eng.btk.gov.tr's doc. http://www.turktelekom.com.tr/tt/portal/News/Archive/7-digit-special-service-number-starting-with-444 -->
+      <uan>
+        <possibleLengths national="7,10"/>
+        <exampleNumber>4441444</exampleNumber>
+        <nationalNumberPattern>
+          444\d{4}|
+          850\d{7}
+        </nationalNumberPattern>
+      </uan>
+    </territory>
+
     <!-- United States -->
     <!-- http://www.nanpa.com/reports/reports_npa.html -->
     <!-- For testing purposes, numbers starting with 24 are not considered US numbers.-->
