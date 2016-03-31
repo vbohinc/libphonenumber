@@ -139,7 +139,7 @@ class IcuRegExp : public RegExp {
       matched_string1, matched_string2, matched_string3
     };
     // If less matches than expected - fail.
-    for (size_t i = 0; i < arraysize(matched_strings); ++i) {
+    for (size_t i = 0; i < 3; ++i) {
       if (matched_strings[i]) {
         // Groups are counted from 1 rather than 0.
         const int group_index = i + 1;
