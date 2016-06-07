@@ -711,7 +711,7 @@ TEST_F(PhoneNumberUtilTest, FormatARNumber) {
   test_number.set_country_code(54);
   test_number.set_national_number(1187654321ULL);
   phone_util_.Format(test_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("011 8765-4321", formatted_number);
+  EXPECT_EQ("11 8765-4321", formatted_number);
   phone_util_.Format(test_number, PhoneNumberUtil::INTERNATIONAL,
                      &formatted_number);
   EXPECT_EQ("+54 11 8765-4321", formatted_number);
@@ -721,7 +721,7 @@ TEST_F(PhoneNumberUtilTest, FormatARNumber) {
 
   test_number.set_national_number(91187654321ULL);
   phone_util_.Format(test_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("011 15 8765-4321", formatted_number);
+  EXPECT_EQ("11 15 8765-4321", formatted_number);
   phone_util_.Format(test_number, PhoneNumberUtil::INTERNATIONAL,
                      &formatted_number);
   EXPECT_EQ("+54 9 11 8765 4321", formatted_number);
@@ -854,7 +854,7 @@ TEST_F(PhoneNumberUtilTest, FormatOutOfCountryCallingNumber) {
   EXPECT_EQ("0011 54 9 11 8765 4321 ext. 1234", formatted_number);
   phone_util_.FormatOutOfCountryCallingNumber(test_number, RegionCode::AR(),
                                               &formatted_number);
-  EXPECT_EQ("011 15 8765-4321 ext. 1234", formatted_number);
+  EXPECT_EQ("0 11 15 8765-4321 ext. 1234", formatted_number);
 }
 
 TEST_F(PhoneNumberUtilTest, FormatOutOfCountryWithInvalidRegion) {
@@ -1025,14 +1025,14 @@ TEST_F(PhoneNumberUtilTest, FormatWithCarrierCode) {
   ar_number.set_country_code(54);
   ar_number.set_national_number(91234125678ULL);
   phone_util_.Format(ar_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("01234 12-5678", formatted_number);
+  EXPECT_EQ("1234 12-5678", formatted_number);
   // Test formatting with a carrier code.
   phone_util_.FormatNationalNumberWithCarrierCode(ar_number, "15",
                                                   &formatted_number);
   EXPECT_EQ("01234 15 12-5678", formatted_number);
   phone_util_.FormatNationalNumberWithCarrierCode(ar_number, "",
                                                   &formatted_number);
-  EXPECT_EQ("01234 12-5678", formatted_number);
+  EXPECT_EQ("1234 12-5678", formatted_number);
   // Here the international rule is used, so no carrier code should be present.
   phone_util_.Format(ar_number, PhoneNumberUtil::E164, &formatted_number);
   EXPECT_EQ("+5491234125678", formatted_number);
@@ -1068,11 +1068,11 @@ TEST_F(PhoneNumberUtilTest, FormatWithPreferredCarrierCode) {
   EXPECT_EQ("01234 15 12-5678", formatted_number);
   phone_util_.FormatNationalNumberWithPreferredCarrierCode(ar_number, "",
                                                            &formatted_number);
-  EXPECT_EQ("01234 12-5678", formatted_number);
+  EXPECT_EQ("1234 12-5678", formatted_number);
   // Test formatting with preferred carrier code present.
   ar_number.set_preferred_domestic_carrier_code("19");
   phone_util_.Format(ar_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("01234 12-5678", formatted_number);
+  EXPECT_EQ("1234 12-5678", formatted_number);
   phone_util_.FormatNationalNumberWithPreferredCarrierCode(ar_number, "15",
                                                            &formatted_number);
   EXPECT_EQ("01234 19 12-5678", formatted_number);
@@ -3311,9 +3311,6 @@ TEST_F(PhoneNumberUtilTest, IsNumberMatchMatches) {
   // Test simple matches where formatting is different, or leading zeros, or
   // country code has been specified.
   EXPECT_EQ(PhoneNumberUtil::EXACT_MATCH,
-            phone_util_.IsNumberMatchWithTwoStrings("+64 3 331 6005",
-                                                    "+64 03 331 6005"));
-  EXPECT_EQ(PhoneNumberUtil::EXACT_MATCH,
             phone_util_.IsNumberMatchWithTwoStrings("+800 1234 5678",
                                                     "+80012345678"));
   EXPECT_EQ(PhoneNumberUtil::EXACT_MATCH,
@@ -3321,7 +3318,7 @@ TEST_F(PhoneNumberUtilTest, IsNumberMatchMatches) {
                                                     "+64 03331 6005"));
   EXPECT_EQ(PhoneNumberUtil::EXACT_MATCH,
             phone_util_.IsNumberMatchWithTwoStrings("+643 331-6005",
-                                                    "+64033316005"));
+                                                    "+6433316005"));
   EXPECT_EQ(PhoneNumberUtil::EXACT_MATCH,
             phone_util_.IsNumberMatchWithTwoStrings("+643 331-6005",
                                                     "+6433316005"));
@@ -3693,17 +3690,16 @@ TEST_F(PhoneNumberUtilTest, ParseNationalNumber) {
             phone_util_.Parse("+64 3 331 6005",
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
-  // We should ignore the leading plus here, since it is not followed by a valid
-  // country code but instead is followed by the IDD for the US.
-  EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+  // Expect an error for + followed by IAC
+  EXPECT_EQ(PhoneNumberUtil::INVALID_COUNTRY_CODE_ERROR,
             phone_util_.Parse("+01164 3 331 6005",
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
-  EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+  EXPECT_EQ(PhoneNumberUtil::INVALID_COUNTRY_CODE_ERROR,
             phone_util_.Parse("+0064 3 331 6005",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
-  EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+  EXPECT_EQ(PhoneNumberUtil::INVALID_COUNTRY_CODE_ERROR,
             phone_util_.Parse("+ 00 64 3 331 6005",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
@@ -3737,7 +3733,7 @@ TEST_F(PhoneNumberUtilTest, ParseNationalNumber) {
   nz_number.set_country_code(64);
   nz_number.set_national_number(64123456ULL);
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("+64(0)64123456",
+            phone_util_.Parse("+6464123456",
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
 

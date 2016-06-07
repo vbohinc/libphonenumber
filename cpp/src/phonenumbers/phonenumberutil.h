@@ -495,6 +495,9 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
   // Administration (NANPA).
   bool IsNANPACountry(const string& region_code) const;
 
+  // Checks if this region should not have the NDP in its national numbers.
+  bool NoNdpInSubNum(const string& region_code) const;
+
   // Returns the national dialling prefix for a specific region. For example,
   // this would be 1 for the United States, and 0 for New Zealand. Set
   // strip_non_digits to true to strip symbols like "~" (which indicates a wait

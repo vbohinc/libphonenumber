@@ -742,6 +742,7 @@
     <!-- https://www.enacom.gob.ar/indicativos-interurbanos_p143 -->
     <!-- http://en.wikipedia.org/wiki/+54 -->
     <territory id="AR" countryCode="54" internationalPrefix="00" nationalPrefix="0"
+          nationalPrefixOptionalWhenFormatting="true"
                nationalPrefixForParsing="
                  0?(?:
                    (
@@ -841,7 +842,7 @@
                      )
                    )?15
                  )?"
-               nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="$NP$FG"
+               nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="NP$FG"
                mobileNumberPortableRegion="true">
       <availableFormats>
         <numberFormat pattern="([68]\d{2})(\d{3})(\d{4})">
