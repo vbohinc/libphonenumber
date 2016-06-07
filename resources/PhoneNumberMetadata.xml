@@ -681,6 +681,7 @@
          the latter two cases we just strip the 0 or 15 as appropriate and leave the number as is.)
          -->
     <territory id="AR" countryCode="54" internationalPrefix="00" nationalPrefix="0"
+      nationalPrefixOptionalWhenFormatting="true"
        nationalPrefixForParsing="
          0?(?:(
             11|
@@ -778,7 +779,7 @@
              )
            )
          )?15)?"
-       nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="$NP$FG"
+       nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="$FG"
        mobileNumberPortableRegion="true">
       <references>
         <sourceUrl>http://www.itu.int/oth/T0202000009/en</sourceUrl>
@@ -7493,7 +7494,7 @@
         </numberFormat>
       </availableFormats>
       <generalDesc>
-        <nationalNumberPattern>\d{7,10}</nationalNumberPattern>
+        <nationalNumberPattern>\d{7}|\d{9,10}</nationalNumberPattern>
         <possibleNumberPattern>\d{4,10}</possibleNumberPattern>
       </generalDesc>
       <areaCodeOptional>

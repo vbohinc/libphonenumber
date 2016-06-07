@@ -59,6 +59,10 @@ const size_t PhoneNumberUtil::kMinLengthForNsn;
 const size_t PhoneNumberUtil::kMaxLengthForNsn;
 const size_t PhoneNumberUtil::kMaxLengthCountryCode;
 const int PhoneNumberUtil::kNanpaCountryCode;
+const std::string kNoNdpRegionList[] = {"AR"};
+const std::set<std::string> kNoNdpRegionSet(
+     kNoNdpRegionList,
+     kNoNdpRegionList+ sizeof(kNoNdpRegionList) / sizeof(kNoNdpRegionList[0]));
 
 // static
 const char PhoneNumberUtil::kPlusChars[] = "+\xEF\xBC\x8B";  /* "+＋" */
@@ -1116,6 +1120,12 @@ void PhoneNumberUtil::FormatOutOfCountryCallingNumber(
     // Details here:
     // http://www.petitfute.com/voyage/225-info-pratiques-reunion
     Format(number, NATIONAL, formatted_number);
+    if (NoNdpInSubNum(calling_from)) {
+      const PhoneMetadata* metadata_calling_from =
+                                            GetMetadataForRegion(calling_from);
+      const string national_prefix = metadata_calling_from->national_prefix();
+      formatted_number->insert(0, StrCat(national_prefix, " "));
+    }
     return;
   }
   // Metadata cannot be NULL because we checked 'IsValidRegionCode()' above.
@@ -1575,6 +1585,10 @@ bool PhoneNumberUtil::IsNANPACountry(const string& region_code) const {
   return nanpa_regions_->find(region_code) != nanpa_regions_->end();
 }
 
+bool PhoneNumberUtil::NoNdpInSubNum(const string& region_code) const {
+  return kNoNdpRegionSet.find(region_code) != kNoNdpRegionSet.end();
+}
+
 // Returns the region codes that matches the specific country calling code. In
 // the case of no region code being found, region_codes will be left empty.
 void PhoneNumberUtil::GetRegionCodesForCountryCallingCode(
@@ -1836,6 +1850,7 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
   DCHECK(phone_number);
 
   string national_number;
+  bool found_cc = false;
   BuildNationalNumberForParsing(number_to_parse, &national_number);
 
   if (!IsViablePhoneNumber(national_number)) {
@@ -1867,25 +1882,11 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
       MaybeExtractCountryCode(country_metadata, keep_raw_input,
                               &normalized_national_number, &temp_number);
   if (country_code_error != NO_PARSING_ERROR) {
-     const scoped_ptr<RegExpInput> number_string_piece(
-        reg_exps_->regexp_factory_->CreateInput(national_number));
-    if ((country_code_error == INVALID_COUNTRY_CODE_ERROR) &&
-        (reg_exps_->plus_chars_pattern_->Consume(number_string_piece.get()))) {
-      normalized_national_number.assign(number_string_piece->ToString());
-      // Strip the plus-char, and try again.
-      MaybeExtractCountryCode(country_metadata,
-                              keep_raw_input,
-                              &normalized_national_number,
-                              &temp_number);
-      if (temp_number.country_code() == 0) {
-        return INVALID_COUNTRY_CODE_ERROR;
-      }
-    } else {
       return country_code_error;
-    }
   }
   int country_code = temp_number.country_code();
   if (country_code != 0) {
+    found_cc = true;
     string phone_number_region;
     GetRegionCodeForCountryCode(country_code, &phone_number_region);
     if (phone_number_region != default_region) {
@@ -1905,9 +1906,11 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
   if (country_metadata) {
     string carrier_code;
     string potential_national_number(normalized_national_number);
-    MaybeStripNationalPrefixAndCarrierCode(*country_metadata,
-                                           &potential_national_number,
-                                           &carrier_code);
+    if (!found_cc) {
+      MaybeStripNationalPrefixAndCarrierCode(*country_metadata,
+                                             &potential_national_number,
+                                             &carrier_code);
+    }
     // We require that the NSN remaining after stripping the national prefix
     // and carrier code be of a possible length for the region. Otherwise, we
     // don't do the stripping, since the original number could be a valid short
