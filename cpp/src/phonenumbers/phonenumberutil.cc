@@ -296,36 +296,15 @@ class PhoneNumberRegExpsAndMappings {
     // formatting alpha numbers, as they show the intended number groupings.
     all_plus_number_grouping_symbols_.insert(
         std::make_pair(ToUnicodeCodepoint("-"), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xEF\xBC\x8D" /* "－" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x80\x90" /* "‐" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x80\x91" /* "‑" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x80\x92" /* "‒" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x80\x93" /* "–" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x80\x94" /* "—" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x80\x95" /* "―" */), '-'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE2\x88\x92" /* "−" */), '-'));
+
     all_plus_number_grouping_symbols_.insert(
         std::make_pair(ToUnicodeCodepoint("/"), '/'));
     all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xEF\xBC\x8F" /* "／" */), '/'));
-    all_plus_number_grouping_symbols_.insert(
         std::make_pair(ToUnicodeCodepoint(" "), ' '));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xE3\x80\x80" /* "　" */), ' '));
     all_plus_number_grouping_symbols_.insert(
         std::make_pair(ToUnicodeCodepoint("\xE2\x81\xA0"), ' '));
     all_plus_number_grouping_symbols_.insert(
         std::make_pair(ToUnicodeCodepoint("."), '.'));
-    all_plus_number_grouping_symbols_.insert(
-        std::make_pair(ToUnicodeCodepoint("\xEF\xBC\x8E" /* "．" */), '.'));
     // Only the upper-case letters are added here - the lower-case versions are
     // added programmatically.
     alpha_mappings_.insert(std::make_pair(ToUnicodeCodepoint("A"), '2'));
@@ -858,10 +837,6 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
   // contained by Réunion.
   string region_code;
   GetRegionCodeForCountryCode(country_calling_code, &region_code);
-  if (NoNdpInSubNum(region_code) && (number_format == NATIONAL)) {
-    formatted_number->assign(national_significant_number);
-    return;
-  }
   // Metadata cannot be NULL because the country calling code is valid (which
   // means that the region code cannot be ZZ and must be one of our supported
   // region codes).
@@ -873,6 +848,23 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
                                 formatted_number);
   PrefixNumberWithCountryCallingCode(country_calling_code, number_format,
                                      formatted_number);
+}
+
+void PhoneNumberUtil::FormatSubscriberNumber(const PhoneNumber& number,
+                                             string* formatted_number) const {
+  int country_calling_code = number.country_code();
+  string national_significant_number;
+  GetNationalSignificantNumber(number, &national_significant_number);
+  string region_code;
+  GetRegionCodeForCountryCode(country_calling_code, &region_code);
+  if (NoNdpInSubNum(region_code)) {
+    formatted_number->assign(national_significant_number);
+    return;
+  }
+  else
+  {
+    Format(number, NATIONAL, formatted_number);
+  }
 }
 
 void PhoneNumberUtil::FormatByPattern(

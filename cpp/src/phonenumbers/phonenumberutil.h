@@ -287,6 +287,12 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
               PhoneNumberFormat number_format,
               string* formatted_number) const;
 
+  // Formats a phone number in subscriber format. This is the same as national
+  // format unless the country the number is from does not include NDP in
+  // subscriber numbers. In that case, we just return the NSN.
+  void FormatSubscriberNumber(const PhoneNumber& number,
+                              string* formatted_number) const;
+
   // Formats a phone number in the specified format using client-defined
   // formatting rules.
   void FormatByPattern(
