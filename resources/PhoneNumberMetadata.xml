@@ -779,7 +779,7 @@
              )
            )
          )?15)?"
-       nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="$FG"
+       nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="$NP$FG"
        mobileNumberPortableRegion="true">
       <references>
         <sourceUrl>http://www.itu.int/oth/T0202000009/en</sourceUrl>
