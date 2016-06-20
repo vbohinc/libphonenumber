@@ -334,14 +334,6 @@ class PhoneNumberMatcherRegExps : public Singleton<PhoneNumberMatcherRegExps> {
         // a separator.
         regexp_factory_->CreateRegExp("(?:\\p{Z}-|-\\p{Z})\\p{Z}*(.+)"));
     inner_matches_->push_back(
-        // Various types of wide hyphens. Note we have decided not to enforce a
-        // space here, since it's possible that it's supposed to be used to
-        // break two numbers without spaces, and we haven't seen many instances
-        // of it used within a number.
-        regexp_factory_->CreateRegExp(
-            "[\xE2\x80\x92-\x2D\xE2\x80\x95\xEF\xBC\x8D]" /* "‒-―－" */
-            "\\p{Z}*(.+)"));
-    inner_matches_->push_back(
         // Breaks on a full stop - e.g. "12345. 332-445-1234 is my number."
         regexp_factory_->CreateRegExp("\\.+\\p{Z}*([^.]+)"));
     inner_matches_->push_back(
