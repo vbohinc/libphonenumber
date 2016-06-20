@@ -711,7 +711,7 @@ TEST_F(PhoneNumberUtilTest, FormatARNumber) {
   test_number.set_country_code(54);
   test_number.set_national_number(1187654321ULL);
   phone_util_.Format(test_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("11 8765-4321", formatted_number);
+  EXPECT_EQ("011 8765-4321", formatted_number);
   phone_util_.Format(test_number, PhoneNumberUtil::INTERNATIONAL,
                      &formatted_number);
   EXPECT_EQ("+54 11 8765-4321", formatted_number);
@@ -721,7 +721,7 @@ TEST_F(PhoneNumberUtilTest, FormatARNumber) {
 
   test_number.set_national_number(91187654321ULL);
   phone_util_.Format(test_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("11 15 8765-4321", formatted_number);
+  EXPECT_EQ("011 15 8765-4321", formatted_number);
   phone_util_.Format(test_number, PhoneNumberUtil::INTERNATIONAL,
                      &formatted_number);
   EXPECT_EQ("+54 9 11 8765 4321", formatted_number);
@@ -854,7 +854,7 @@ TEST_F(PhoneNumberUtilTest, FormatOutOfCountryCallingNumber) {
   EXPECT_EQ("0011 54 9 11 8765 4321 ext. 1234", formatted_number);
   phone_util_.FormatOutOfCountryCallingNumber(test_number, RegionCode::AR(),
                                               &formatted_number);
-  EXPECT_EQ("0 11 15 8765-4321 ext. 1234", formatted_number);
+  EXPECT_EQ("011 15 8765-4321 ext. 1234", formatted_number);
 }
 
 TEST_F(PhoneNumberUtilTest, FormatOutOfCountryWithInvalidRegion) {
@@ -1025,14 +1025,14 @@ TEST_F(PhoneNumberUtilTest, FormatWithCarrierCode) {
   ar_number.set_country_code(54);
   ar_number.set_national_number(91234125678ULL);
   phone_util_.Format(ar_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("1234 12-5678", formatted_number);
+  EXPECT_EQ("01234 12-5678", formatted_number);
   // Test formatting with a carrier code.
   phone_util_.FormatNationalNumberWithCarrierCode(ar_number, "15",
                                                   &formatted_number);
   EXPECT_EQ("01234 15 12-5678", formatted_number);
   phone_util_.FormatNationalNumberWithCarrierCode(ar_number, "",
                                                   &formatted_number);
-  EXPECT_EQ("1234 12-5678", formatted_number);
+  EXPECT_EQ("01234 12-5678", formatted_number);
   // Here the international rule is used, so no carrier code should be present.
   phone_util_.Format(ar_number, PhoneNumberUtil::E164, &formatted_number);
   EXPECT_EQ("+5491234125678", formatted_number);
@@ -1068,11 +1068,11 @@ TEST_F(PhoneNumberUtilTest, FormatWithPreferredCarrierCode) {
   EXPECT_EQ("01234 15 12-5678", formatted_number);
   phone_util_.FormatNationalNumberWithPreferredCarrierCode(ar_number, "",
                                                            &formatted_number);
-  EXPECT_EQ("1234 12-5678", formatted_number);
+  EXPECT_EQ("01234 12-5678", formatted_number);
   // Test formatting with preferred carrier code present.
   ar_number.set_preferred_domestic_carrier_code("19");
   phone_util_.Format(ar_number, PhoneNumberUtil::NATIONAL, &formatted_number);
-  EXPECT_EQ("1234 12-5678", formatted_number);
+  EXPECT_EQ("01234 12-5678", formatted_number);
   phone_util_.FormatNationalNumberWithPreferredCarrierCode(ar_number, "15",
                                                            &formatted_number);
   EXPECT_EQ("01234 19 12-5678", formatted_number);
@@ -3640,7 +3640,7 @@ TEST_F(PhoneNumberUtilTest, ParseNationalNumber) {
   EXPECT_EQ(nz_number, test_number);
   // Test parsing RFC3966 format with a phone context.
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("tel:03-331-6005;phone-context=+64",
+            phone_util_.Parse("tel:3-331-6005;phone-context=+64",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
@@ -3652,18 +3652,18 @@ TEST_F(PhoneNumberUtilTest, ParseNationalNumber) {
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("My number is tel:03-331-6005;phone-context=+64",
+            phone_util_.Parse("My number is tel:3-331-6005;phone-context=+64",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   // Test parsing RFC3966 format with optional user-defined parameters. The
   // parameters will appear after the context if present.
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("tel:03-331-6005;phone-context=+64;a=%A1",
+            phone_util_.Parse("tel:3-331-6005;phone-context=+64;a=%A1",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   // Test parsing RFC3966 with an ISDN subaddress.
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("tel:03-331-6005;isub=12345;phone-context=+64",
+            phone_util_.Parse("tel:3-331-6005;isub=12345;phone-context=+64",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
@@ -3671,7 +3671,7 @@ TEST_F(PhoneNumberUtilTest, ParseNationalNumber) {
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("03-331-6005;phone-context=+64",
+            phone_util_.Parse("3-331-6005;phone-context=+64",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
   // Testing international prefixes.
@@ -4206,17 +4206,17 @@ TEST_F(PhoneNumberUtilTest, ParseNumbersWithPlusWithNoRegion) {
   result_proto.Clear();
   // Test parsing RFC3966 format with a phone context.
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("tel:03-331-6005;phone-context=+64",
+            phone_util_.Parse("tel:3-331-6005;phone-context=+64",
                               RegionCode::GetUnknown(), &result_proto));
   EXPECT_EQ(nz_number, result_proto);
   result_proto.Clear();
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("  tel:03-331-6005;phone-context=+64",
+            phone_util_.Parse("  tel:3-331-6005;phone-context=+64",
                               RegionCode::GetUnknown(), &result_proto));
   EXPECT_EQ(nz_number, result_proto);
   result_proto.Clear();
   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
-            phone_util_.Parse("tel:03-331-6005;isub=12345;phone-context=+64",
+            phone_util_.Parse("tel:3-331-6005;isub=12345;phone-context=+64",
                               RegionCode::GetUnknown(), &result_proto));
   EXPECT_EQ(nz_number, result_proto);
 
