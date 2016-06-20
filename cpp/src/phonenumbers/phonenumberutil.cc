@@ -858,6 +858,10 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
   // contained by Réunion.
   string region_code;
   GetRegionCodeForCountryCode(country_calling_code, &region_code);
+  if (NoNdpInSubNum(region_code) && (number_format == NATIONAL)) {
+    formatted_number->assign(national_significant_number);
+    return;
+  }
   // Metadata cannot be NULL because the country calling code is valid (which
   // means that the region code cannot be ZZ and must be one of our supported
   // region codes).
@@ -1120,12 +1124,6 @@ void PhoneNumberUtil::FormatOutOfCountryCallingNumber(
     // Details here:
     // http://www.petitfute.com/voyage/225-info-pratiques-reunion
     Format(number, NATIONAL, formatted_number);
-    if (NoNdpInSubNum(calling_from)) {
-      const PhoneMetadata* metadata_calling_from =
-                                            GetMetadataForRegion(calling_from);
-      const string national_prefix = metadata_calling_from->national_prefix();
-      formatted_number->insert(0, StrCat(national_prefix, " "));
-    }
     return;
   }
   // Metadata cannot be NULL because we checked 'IsValidRegionCode()' above.
