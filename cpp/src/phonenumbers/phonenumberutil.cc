@@ -58,7 +58,7 @@ const size_t PhoneNumberUtil::kMinLengthForNsn;
 const size_t PhoneNumberUtil::kMaxLengthForNsn;
 const size_t PhoneNumberUtil::kMaxLengthCountryCode;
 const int PhoneNumberUtil::kNanpaCountryCode;
-const std::string kNoNdpRegionList[] = {"AR"};
+const std::string kNoNdpRegionList[] = {"AR", "CL", "CO", "MX", "SE", "VN"};
 const std::set<std::string> kNoNdpRegionSet(
      kNoNdpRegionList,
      kNoNdpRegionList+ sizeof(kNoNdpRegionList) / sizeof(kNoNdpRegionList[0]));
