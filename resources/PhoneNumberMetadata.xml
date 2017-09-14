@@ -8096,7 +8096,7 @@
     <!-- http://www.itu.int/oth/T0202000046/en -->
     <territory id="FK" countryCode="500" internationalPrefix="00">
       <generalDesc>
-        <nationalNumberPattern>[2-7]\d{4}</nationalNumberPattern>
+        <nationalNumberPattern>[2-9]\d{4}</nationalNumberPattern>
       </generalDesc>
       <fixedLine>
         <possibleLengths national="5"/>
