@@ -7132,7 +7132,7 @@
       </references>
       <!-- All numbers are formatted together, as a block. -->
       <generalDesc>
-        <nationalNumberPattern>[2-7]\d{4}</nationalNumberPattern>
+        <nationalNumberPattern>[2-9]\d{4}</nationalNumberPattern>
         <possibleNumberPattern>\d{5}</possibleNumberPattern>
       </generalDesc>
       <fixedLine>
