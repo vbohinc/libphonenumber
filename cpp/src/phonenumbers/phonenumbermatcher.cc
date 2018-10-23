@@ -53,7 +53,7 @@
 
 #ifdef I18N_PHONENUMBERS_USE_RE2
 #include "phonenumbers/regexp_adapter_re2.h"
-#endif  // I18N_PHONENUMBERS_USE_RE2_AND_ICU
+#endif  // I18N_PHONENUMBERS_USE_RE2
 
 using std::map;
 using std::numeric_limits;
@@ -219,10 +219,6 @@ class PhoneNumberMatcherRegExps : public Singleton<PhoneNumberMatcherRegExps> {
   string lead_class_chars_;
   // Same as lead_class_chars_, but enclosed as a character class.
   string lead_class_;
-  // Extra helper strings that form part of pattern_. These are stored
-  // separately since StrCat has a limit of 12 args.
-  string opening_punctuation_;
-  string optional_extn_pattern_;
 
  public:
   // We use two different reg-ex factories here for performance reasons. RE2 is
@@ -287,11 +283,6 @@ class PhoneNumberMatcherRegExps : public Singleton<PhoneNumberMatcherRegExps> {
         digit_sequence_(StrCat("\\p{Nd}", Limit(1, digit_block_limit_))),
         lead_class_chars_(StrCat(opening_parens_, PhoneNumberUtil::kPlusChars)),
         lead_class_(StrCat("[", lead_class_chars_, "]")),
-        opening_punctuation_(StrCat("(?:", lead_class_, punctuation_, ")")),
-        optional_extn_pattern_(StrCat(
-            "(?i)(?:",
-            PhoneNumberUtil::GetInstance()->GetExtnPatternsForMatching(),
-            ")?")),
         regexp_factory_for_pattern_(new ICURegExpFactory()),
 #ifdef I18N_PHONENUMBERS_USE_RE2
         regexp_factory_(new RE2RegExpFactory()),
@@ -317,9 +308,11 @@ class PhoneNumberMatcherRegExps : public Singleton<PhoneNumberMatcherRegExps> {
             regexp_factory_->CreateRegExp("(\\d+)")),
         lead_class_pattern_(regexp_factory_->CreateRegExp(lead_class_)),
         pattern_(regexp_factory_for_pattern_->CreateRegExp(
-            StrCat("(", opening_punctuation_, lead_limit_,
+            StrCat("((?:", lead_class_, punctuation_, ")", lead_limit_,
                    digit_sequence_, "(?:", punctuation_, digit_sequence_, ")",
-                   block_limit_, optional_extn_pattern_, ")"))) {
+                   block_limit_, "(?i)(?:",
+                   PhoneNumberUtil::GetInstance()->GetExtnPatternsForMatching(),
+                   ")?)"))) {
     inner_matches_->push_back(
         // Breaks on the slash - e.g. "651-234-2345/332-445-1234"
         regexp_factory_->CreateRegExp("/+(.*)"));
@@ -333,6 +326,14 @@ class PhoneNumberMatcherRegExps : public Singleton<PhoneNumberMatcherRegExps> {
         // require a space on either side of the hyphen for it to be considered
         // a separator.
         regexp_factory_->CreateRegExp("(?:\\p{Z}-|-\\p{Z})\\p{Z}*(.+)"));
+    inner_matches_->push_back(
+        // Various types of wide hyphens. Note we have decided not to enforce a
+        // space here, since it's possible that it's supposed to be used to
+        // break two numbers without spaces, and we haven't seen many instances
+        // of it used within a number.
+        regexp_factory_->CreateRegExp(
+            "[\xE2\x80\x92-\xE2\x80\x95\xEF\xBC\x8D]" /* "‒-―－" */
+            "\\p{Z}*(.+)"));
     inner_matches_->push_back(
         // Breaks on a full stop - e.g. "12345. 332-445-1234 is my number."
         regexp_factory_->CreateRegExp("\\.+\\p{Z}*([^.]+)"));
@@ -479,35 +480,6 @@ bool PhoneNumberMatcher::ParseAndVerify(const string& candidate, int offset,
   if (phone_util_.ParseAndKeepRawInput(candidate, preferred_region_, &number) !=
       PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
-  }
-
-
-  // Check Israel * numbers: these are a special case in that they are
-  // four-digit numbers that our library supports, but they can only be dialled
-  // with a leading *. Since we don't actually store or detect the * in our
-  // phone number library, this means in practice we detect most four digit
-  // numbers as being valid for Israel. We are considering moving these numbers
-  // to ShortNumberInfo instead, in which case this problem would go away, but
-  // in the meantime we want to restrict the false matches so we only allow
-  // these numbers if they are preceded by a star. We enforce this for all
-  // leniency levels even though these numbers are technically accepted by
-  // isPossibleNumber and isValidNumber since we consider it to be a deficiency
-  // in those methods that they accept these numbers without the *.
-  // TODO: Remove this or make it significantly less hacky once
-  // we've decided how to handle these short codes going forward in
-  // ShortNumberInfo. We could use the formatting rules for instance, but that
-  // would be slower.
-  string region_code;
-  phone_util_.GetRegionCodeForCountryCode(number.country_code(), &region_code);
-  if (region_code == "IL") {
-    string national_number;
-    phone_util_.GetNationalSignificantNumber(number, &national_number);
-    if (national_number.length() == 4 &&
-        // Just check the previous char, since * is an ASCII character.
-        (offset == 0 || (offset > 0 && text_[offset - 1] != '*'))) {
-      // No match.
-      return false;
-    }
   }
 
   if (VerifyAccordingToLeniency(leniency_, number, candidate)) {

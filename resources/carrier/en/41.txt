@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+4175|Swisscom
 4176|Sunrise
 4177|Tele4u
-4178|Orange
+4178|Salt
 4179|Swisscom
