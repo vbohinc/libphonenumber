@@ -273,6 +273,19 @@ void NormalizeHelper(const std::map<char32, char>& normalization_replacements,
   number->assign(normalized_number);
 }
 
+PhoneNumberUtil::ValidationResult TestNumberLengthAgainstPattern(
+    const RegExp& number_pattern, const string& number) {
+  string extracted_number;
+  if (number_pattern.FullMatch(number, &extracted_number)) {
+    return PhoneNumberUtil::IS_POSSIBLE;
+  }
+  if (number_pattern.PartialMatch(number, &extracted_number)) {
+    return PhoneNumberUtil::TOO_LONG;
+  } else {
+    return PhoneNumberUtil::TOO_SHORT;
+  }
+}
+
 // Returns true if there is any possible number data set for a particular
 // PhoneNumberDesc.
 bool DescHasPossibleNumberData(const PhoneNumberDesc& desc) {
@@ -953,7 +966,7 @@ void PhoneNumberUtil::GetIdPrefixForRegion(const string& region_code,
   // format of the number is returned, unless there is a preferred international
   // prefix.
   international_prefix->assign(
-      reg_exps_->unique_international_prefix_->FullMatch(international_prefix_match)
+      reg_exps_->single_international_prefix_->FullMatch(international_prefix_match)
       ? international_prefix_match
       : metadata->preferred_international_prefix());
   if (strip_non_digits) {

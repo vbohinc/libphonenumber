@@ -2901,23 +2901,29 @@ TEST_F(PhoneNumberUtilTest, GetInternationalDiallingPrefixForRegion) {
 
   // Test non-main country to see it gets the international dialling prefix for
   // the main country with that country calling code.
+  id_prefix.clear();
   phone_util_.GetIdPrefixForRegion(RegionCode::FR(), false, &id_prefix);
   EXPECT_EQ("00", id_prefix);
 
+  id_prefix.clear();
   phone_util_.GetIdPrefixForRegion(RegionCode::NZ(), false, &id_prefix);
   EXPECT_EQ("00", id_prefix);
 
   // Test case with non-00 international prefix.
+  id_prefix.clear();
   phone_util_.GetIdPrefixForRegion(RegionCode::JP(), false, &id_prefix);
   EXPECT_EQ("010", id_prefix);
 
+  id_prefix.clear();
   phone_util_.GetIdPrefixForRegion(RegionCode::AU(), true, &id_prefix);
   EXPECT_EQ("0011", id_prefix);
 
   // Test cases with invalid regions.
+  id_prefix.clear();
   phone_util_.GetIdPrefixForRegion(RegionCode::GetUnknown(), false, &id_prefix);
   EXPECT_EQ("", id_prefix);
 
+  id_prefix.clear();
   phone_util_.GetIdPrefixForRegion(RegionCode::UN001(), false, &id_prefix);
   EXPECT_EQ("", id_prefix);
 }
@@ -3690,16 +3696,17 @@ TEST_F(PhoneNumberUtilTest, ParseNationalNumber) {
             phone_util_.Parse("+64 3 331 6005",
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
-  // Expect an error for + followed by IAC
-  EXPECT_EQ(PhoneNumberUtil::INVALID_COUNTRY_CODE_ERROR,
+  // We should ignore the leading plus here, since it is not followed by a valid
+  // country code but instead is followed by the IDD for the US.
+  EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
             phone_util_.Parse("+01164 3 331 6005",
                               RegionCode::US(), &test_number));
   EXPECT_EQ(nz_number, test_number);
-  EXPECT_EQ(PhoneNumberUtil::INVALID_COUNTRY_CODE_ERROR,
+  EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
             phone_util_.Parse("+0064 3 331 6005",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
-  EXPECT_EQ(PhoneNumberUtil::INVALID_COUNTRY_CODE_ERROR,
+  EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
             phone_util_.Parse("+ 00 64 3 331 6005",
                               RegionCode::NZ(), &test_number));
   EXPECT_EQ(nz_number, test_number);
