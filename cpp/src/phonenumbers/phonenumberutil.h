@@ -981,12 +981,6 @@ class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
   bool IsShorterThanPossibleNormalNumber(const PhoneMetadata* country_metadata,
                                          const string& number) const;
 
-  // Returns true if the number can be dialled from outside the region, or
-  // unknown. If the number can only be dialled from within the region, returns
-  // false. Does not check the number is a valid number. Note that, at the
-  // moment, this method does not handle short numbers.
-  bool CanBeInternationallyDialled(const PhoneNumber& number) const;
-
   bool FillInDefaultNumberFormat(
       const string& number,
       const PhoneMetadata& metadata,
