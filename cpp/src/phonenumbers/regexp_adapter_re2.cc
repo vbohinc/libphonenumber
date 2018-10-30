@@ -30,6 +30,8 @@
 namespace i18n {
 namespace phonenumbers {
 
+using re2::StringPiece;
+
 // Implementation of RegExpInput abstract class.
 class RE2RegExpInput : public RegExpInput {
  public:
