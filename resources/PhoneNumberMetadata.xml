@@ -742,7 +742,6 @@
     <!-- https://www.enacom.gob.ar/indicativos-interurbanos_p143 -->
     <!-- http://en.wikipedia.org/wiki/+54 -->
     <territory id="AR" countryCode="54" internationalPrefix="00" nationalPrefix="0"
-          nationalPrefixOptionalWhenFormatting="true"
                nationalPrefixForParsing="
                  0?(?:
                    (
@@ -842,7 +841,7 @@
                      )
                    )?15
                  )?"
-               nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="NP$FG"
+               nationalPrefixTransformRule="9$1" nationalPrefixFormattingRule="$NP$FG"
                mobileNumberPortableRegion="true">
       <availableFormats>
         <numberFormat pattern="([68]\d{2})(\d{3})(\d{4})">
@@ -876,7 +875,6 @@
              from the XLS spreadsheet downloaded from the "Númeración Geográfica" link cited
              above. Each pattern captures all 3-3-4 prefixes for its length, but may also capture
              some 4-2-4 cases.
-
              In cases where a range contains both 3-3-4 and 4-2-4 prefixes, the most commonly used
              one should be considered the default.
              * If there are more distinct 4-2-4 prefixes, then the regular expression should
@@ -885,14 +883,11 @@
                EXCLUDE only the explicitly mentioned 4-2-4 prefixes.
              This should help maximize the chances of new ranges automatically being assigned to
              the right form.
-
              In the final (most specific) regular expression, the few remaining ambiguous cases
              are decided by comparing usage counts. Any manual edits to these expressions not
              reflected in the XLS spreadsheet must be clearly called out below:
-
              Added Manually as 3-3-4 format:
              * 2981 (General Roca, Río Negro) : Numbers found online suggest 3-3-4
-
              See also:
              https://github.com/googlei18n/libphonenumber/issues/611
              https://github.com/googlei18n/libphonenumber/issues/559 -->
@@ -1337,7 +1332,6 @@
         <nationalNumberPattern>810\d{7}</nationalNumberPattern>
       </uan>
     </territory>
-
     <!-- American Samoa -->
     <!-- Calling code and formatting shared with 'US' -->
     <!-- http://www.itu.int/oth/T0202000004/en -->
