@@ -24109,7 +24109,7 @@
         </numberFormat>
       </availableFormats>
       <generalDesc>
-        <nationalNumberPattern>[289]\d{8}</nationalNumberPattern>
+        <nationalNumberPattern>[2689]\d{8}</nationalNumberPattern>
         <possibleNumberPattern>\d{9}</possibleNumberPattern>
       </generalDesc>
       <fixedLine>
